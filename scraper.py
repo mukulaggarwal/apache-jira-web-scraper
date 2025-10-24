@@ -166,9 +166,15 @@ def transform_issue(issue: Dict) -> Dict:
     key = issue.get("key")
     summary = fields.get("summary")
     description = fields.get("description") or ""
-    issuetype = fields.get("issuetype", {}).get("name")
-    status = fields.get("status", {}).get("name")
-    priority = fields.get("priority", {}).get("name")
+    # Safely extract issue type, status and priority.  Sometimes Jira fields
+    # exist with a null value which would cause `.get` on NoneType.  Use
+    # `or {}` to ensure we always operate on a dict.
+    issuetype_data = fields.get("issuetype") or {}
+    issuetype = issuetype_data.get("name")
+    status_data = fields.get("status") or {}
+    status = status_data.get("name")
+    priority_data = fields.get("priority") or {}
+    priority = priority_data.get("name")
     reporter = fields.get("reporter", {}).get("displayName") if fields.get("reporter") else None
     assignee = fields.get("assignee", {}).get("displayName") if fields.get("assignee") else None
     created = fields.get("created")

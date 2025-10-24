@@ -6,7 +6,7 @@ This repository contains a reference implementation of the **Web Scraping Tuto
 
 The provided Python code implements a scraper that:
 
-1. **Scrapes issue data from multiple Apache Jira projects.**  You can specify any number of project keys (the assignment requires at least three).  The scraper fetches issue metadata, descriptions, comments and other relevant fields from the public Jira REST API at `https://issues.apache.org/jira`.
+1. **Scrapes issue data from multiple Apache Jira projects.**  You can specify any number of project keys (the assignment requires at least three).  The scraper fetches issue metadata, descriptions, comments and other relevant fields from the public Jira REST API at `https://issues.apache.org/jira`.  For quick testing you can also limit how many issues are processed across all projects by using the `--max-issues` command‑line option.
 2. **Handles pagination, rate‑limits and transient failures.**  Requests are retried with exponential back‑off for common network errors, HTTP 429 (Too Many Requests) and 5xx server responses.  The `max_results` and `start_at` parameters are used to iteratively page through large result sets.  A simple checkpointing mechanism allows the scraper to resume from the last successful state if interrupted.
 3. **Transforms raw Jira issues into a clean JSONL format.**  Each output JSON object contains:
    - *issue_key*, *title*, *status*, *project*, *reporter*, *assignee*, *priority*, *created*, *updated* and other metadata.
@@ -39,6 +39,15 @@ To scrape three example Apache projects (e.g. `SPARK`, `HADOOP` and `ZOOKEEPER`)
 
 ```bash
 python run_scraper.py --projects SPARK HADOOP ZOOKEEPER --output examples/output.jsonl
+```
+
+During development or testing you may not want to download every issue.  You can limit the number of issues processed across all projects by specifying the `--max-issues` option.  For example, to fetch only the first **10** issues from the above projects and write them to `test_output.jsonl`:
+
+```bash
+python run_scraper.py \
+  --projects SPARK HADOOP ZOOKEEPER \
+  --output examples/test_output.jsonl \
+  --max-issues 10
 ```
 
 The script will stream progress to the console and write each issue as a JSON object on a separate line of the output file.  You can safely interrupt and resume the scraper; it will continue from the last saved checkpoint.
